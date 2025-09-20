@@ -147,6 +147,8 @@
 </template>
 
 <script>
+import { childrenAPI, assessmentsAPI } from '../../services/api'
+
 export default {
   name: 'ChildAssessment',
   data() {
@@ -177,38 +179,43 @@ export default {
         const childId = this.$route.params.childId
         console.log('Loading child data for ID:', childId)
         
-        const mockChildren = {
-          1: {
-            schoolName: 'Kampala Primary School',
-            childName: 'John Doe',
-            dateOfBirth: '2010-05-15',
-            caseNumber: 'CH001',
-            gender: 'Male',
-            religion: 'Catholic'
-          },
-          2: {
-            schoolName: 'Kampala Primary School',
-            childName: 'Jane Smith',
-            dateOfBirth: '2011-03-20',
-            caseNumber: 'CH002',
-            gender: 'Female',
-            religion: 'Anglican'
-          },
-          3: {
-            schoolName: 'Kampala Primary School',
-            childName: 'Mary Johnson',
-            dateOfBirth: '2012-08-10',
-            caseNumber: 'CH003',
-            gender: 'Female',
-            religion: 'Pentecostal'
-          }
+        // Load child data from API
+        const response = await childrenAPI.getById(childId)
+        this.childData = {
+          schoolName: response.data.school?.name || 'Not specified',
+          childName: response.data.name || 'Not specified',
+          dateOfBirth: response.data.date_of_birth || 'Not specified',
+          caseNumber: response.data.case_number || 'Not specified',
+          gender: response.data.gender || 'Not specified',
+          religion: response.data.religion || 'Not specified'
         }
         
-        if (mockChildren[childId]) {
-          this.childData = mockChildren[childId]
+        // Load existing assessment data if available
+        const currentAssessment = await assessmentsAPI.getByChild(childId)
+        if (currentAssessment.data && currentAssessment.data.length > 0) {
+          const latest = currentAssessment.data[0]
+          if (latest.status === 'in_progress') {
+            // Pre-fill form with existing data
+            this.form = {
+              currently_enrolled: latest.currently_enrolled || '',
+              attending_regularly: latest.attending_regularly || '',
+              progressed_last_year: latest.progressed_last_year || '',
+              teacher_opinion: latest.teacher_opinion || '',
+              classroom_behavior: latest.classroom_behavior || ''
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading child data:', error)
+        // Fallback to show error message
+        this.childData = {
+          schoolName: 'Error loading data',
+          childName: 'Error loading data',
+          dateOfBirth: 'Error loading data',
+          caseNumber: 'Error loading data',
+          gender: 'Error loading data',
+          religion: 'Error loading data'
+        }
       }
     },
     async submitAssessment() {
@@ -216,9 +223,24 @@ export default {
         const childId = this.$route.params.childId
         console.log('Saving education section:', this.form)
         
+        // Save education section to API
+        const assessmentData = {
+          section: 'education',
+          assessment_type: 'initial',
+          currently_enrolled: this.form.currently_enrolled === 'yes',
+          attending_regularly: this.form.attending_regularly === 'yes',
+          progressed_last_year: this.form.progressed_last_year === 'yes',
+          teacher_opinion: this.form.teacher_opinion,
+          classroom_behavior: this.form.classroom_behavior
+        }
+        
+        await assessmentsAPI.create(childId, assessmentData)
+        
         this.$router.push(`/assessments/child/${childId}/care-protection`)
       } catch (error) {
         console.error('Error saving assessment:', error)
+        // Show error message to user
+        alert('Error saving assessment. Please try again.')
       }
     }
   }

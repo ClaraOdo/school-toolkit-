@@ -173,6 +173,8 @@
 </template>
 
 <script>
+import { childrenAPI, householdAssessmentsAPI } from '../../services/api'
+
 export default {
   name: 'AssessmentsIndex',
   data() {
@@ -182,56 +184,15 @@ export default {
       selectedExistingHousehold: '',
       familyAssessmentType: 'new',
       existingFamilyAssessment: null,
-      children: [
-        { 
-          id: 1, 
-          name: 'John Doe', 
-          caseNumber: 'CH001', 
-          caregiverName: 'Mary Doe',
-          caregiverPhone: '0701234567',
-          address: 'Kololo, Nakasero Parish'
-        },
-        { 
-          id: 2, 
-          name: 'Jane Smith', 
-          caseNumber: 'CH002', 
-          caregiverName: 'Sarah Smith',
-          caregiverPhone: '0709876543',
-          address: 'Kamwokya, Central Parish'
-        },
-        { 
-          id: 3, 
-          name: 'Mary Johnson', 
-          caseNumber: 'CH003', 
-          caregiverName: 'Mary Doe',
-          caregiverPhone: '0701234567',
-          address: 'Kololo, Nakasero Parish'
-        }
-      ],
-      familyAssessments: [
-        { childId: 1, childName: 'John Doe', completed: true, id: 'FA001' }
-      ],
-      existingHouseholds: [
-        {
-          id: 'HH001',
-          householdHead: 'Mary Doe',
-          address: 'Kololo, Nakasero Parish',
-          phone: '0701234567',
-          childrenCount: 2,
-          assessmentId: 'FA001',
-          lastUpdated: '2024-01-15'
-        },
-        {
-          id: 'HH002', 
-          householdHead: 'Sarah Smith',
-          address: 'Kamwokya, Central Parish',
-          phone: '0709876543',
-          childrenCount: 1,
-          assessmentId: 'FA002',
-          lastUpdated: '2024-01-10'
-        }
-      ]
+      children: [],
+      loading: true,
+      familyAssessments: [],
+      existingHouseholds: []
     }
+  },
+  async mounted() {
+    await this.loadChildren()
+    await this.loadExistingHouseholds()
   },
   computed: {
     selectedChild() {
@@ -244,12 +205,64 @@ export default {
   methods: {
     async loadChildren() {
       try {
-        // Replace with actual API call
-        // const response = await childrenAPI.getAll()
-        // this.children = response.data
-        console.log('Loading children...')
+        const response = await childrenAPI.getAll()
+        
+        if (response.data && response.data.data) {
+          this.children = response.data.data.map(child => ({
+            id: child.id,
+            name: child.name,
+            caseNumber: child.case_number,
+            caregiverName: child.primary_caregiver_name,
+            caregiverPhone: child.primary_caregiver_phone,
+            address: child.address
+          }))
+        }
+        this.loading = false
       } catch (error) {
         console.error('Error loading children:', error)
+        this.loading = false
+      }
+    },
+    async loadChildren() {
+      console.log('Testing direct fetch...')
+      try {
+        const response = await fetch('http://localhost:8000/api/health')
+        console.log('Fetch response:', response)
+        const data = await response.json()
+        console.log('Fetch data:', data)
+      } catch (error) {
+        console.error('Fetch error:', error)
+      }
+    },
+    async loadExistingHouseholds() {
+      try {
+        const response = await householdAssessmentsAPI.getAll()
+        this.existingHouseholds = response.data.data || []
+      } catch (error) {
+        console.error('Error loading existing households:', error)
+      }
+    },
+    async loadChildren() {
+      try {
+        console.log('Loading children...')
+        const response = await childrenAPI.getAll()
+        console.log('API response:', response)
+        
+        if (response.data && response.data.data) {
+          this.children = response.data.data.map(child => ({
+            id: child.id,
+            name: child.name,
+            caseNumber: child.case_number,
+            caregiverName: child.primary_caregiver_name,
+            caregiverPhone: child.primary_caregiver_phone,
+            address: child.address
+          }))
+          console.log('Children loaded:', this.children)
+        }
+        this.loading = false
+      } catch (error) {
+        console.error('Error loading children:', error)
+        this.loading = false
       }
     },
     startChildAssessment() {
