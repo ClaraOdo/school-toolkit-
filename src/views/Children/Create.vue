@@ -378,6 +378,16 @@
               />
               <span class="ml-2 text-sm">{{ condition.label }}</span>
             </label>
+            <div v-if="form.health_status && form.health_status.includes('other')">
+              <label for="other_health_condition" class="block text-sm font-medium text-gray-700">Other Health Condition</label>
+              <input
+                id="other_health_condition"
+                v-model="form.other_health_condition"
+                type="text"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Specify other health condition"
+              />
+              </div>
           </div>
         </div>
       </div>
@@ -420,13 +430,15 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { childrenAPI } from '../../services/api'
+import { childrenAPI, schoolsAPI } from '../../services/api'
+import { isAdmin } from '../../stores/auth'
 
 const router = useRouter()
 const loading = ref(false)
 const error = ref('')
+const schools = ref([])
 
 const form = reactive({
   name: '',
@@ -452,14 +464,17 @@ const form = reactive({
   birth_position: '',
   health_status: [],
   tribe: '',
-  language_spoken: ''
+  language_spoken: '',
+  school_id: ''
 })
 
 const disabilityTypes = [
-  { value: 'physical', label: 'Physical' },
-  { value: 'intellectual', label: 'Intellectual' },
-  { value: 'sensory', label: 'Sensory' },
-  { value: 'mental_health', label: 'Mental Health' },
+  { value: 'difficulty_seeing', label: 'Difficulty seeing' },
+  { value: 'difficulty_hearing', label: 'Difficulty hearing' },
+  { value: 'difficulty_walking_or_climbing', label: 'Difficulty walking or climbing' },
+  { value: 'difficulty_communicating', label: 'Difficulty communicating' },
+  { value: 'difficulty_remembering_concentrating', label: 'Difficulty remembering / concentrating' },
+  { value: 'difficulty_with_self_care', label: 'Difficulty with self - care' },
   { value: 'multiple', label: 'Multiple' }
 ]
 
@@ -473,15 +488,24 @@ const admissionReasons = [
   { value: 'education_access', label: 'Education Access' },
   { value: 'other', label: 'Other' }
 ]
-
 const healthConditions = [
-  { value: 'healthy', label: 'Healthy' },
-  { value: 'chronic_illness', label: 'Chronic Illness' },
-  { value: 'mental_health_issues', label: 'Mental Health Issues' },
-  { value: 'malnutrition', label: 'Malnutrition' },
-  { value: 'developmental_delays', label: 'Developmental Delays' },
-  { value: 'requires_medication', label: 'Requires Medication' }
+  { value: 'asthma', label: 'Asthma' },
+  { value: 'diabetes', label: 'Diabetes' },
+  { value: 'sickle_cell_disease', label: 'Sickle cell disease' },
+  { value: 'hiv', label: 'HIV' },
+  { value: 'other_health_condition', label: 'Other' }
 ]
+
+const fetchSchools = async () => {
+  if (isAdmin.value) {
+    try {
+      const response = await schoolsAPI.getAll()
+      schools.value = response.data.data || response.data
+    } catch (err) {
+      console.error('Error fetching schools:', err)
+    }
+  }
+}
 
 const calculateAge = () => {
   if (form.date_of_birth) {
@@ -514,4 +538,8 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  fetchSchools()
+})
 </script>
