@@ -33,7 +33,7 @@
               <label class="block text-sm font-medium text-gray-700">Select Child:</label>
               <select v-model="selectedChildId" class="form-input">
                 <option value="">Choose a child...</option>
-                <option v-for="child in children" :key="child.id" :value="child.id">
+                <option v-for="child in availableChildren" :key="child.id" :value="child.id">
                   {{ child.name }} - {{ child.caseNumber }}
                 </option>
               </select>
@@ -92,7 +92,7 @@
                 <label class="block text-sm font-medium text-gray-700">Select Child for New Family Assessment:</label>
                 <select v-model="selectedFamilyChildId" @change="checkExistingFamilyAssessment" class="form-input">
                   <option value="">Choose a child...</option>
-                  <option v-for="child in children" :key="child.id" :value="child.id">
+                  <option v-for="child in availableFamilyChildren" :key="child.id" :value="child.id">
                     {{ child.name }} - {{ child.caseNumber }}
                   </option>
                 </select>
@@ -164,8 +164,57 @@
     <div class="mt-8">
       <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Assessments</h2>
       <div class="bg-white shadow overflow-hidden sm:rounded-md">
-        <div class="px-4 py-5 sm:p-6">
-          <p class="text-sm text-gray-500">No assessments completed yet.</p>
+        <div v-if="uniqueAssessments.length === 0" class="px-4 py-5 sm:p-6">
+          <p class="text-sm text-gray-500">No assessments started yet.</p>
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Child Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="assessment in uniqueAssessments" :key="assessment.id">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-sm font-medium text-blue-600">{{ assessment.child.name.charAt(0) }}</span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">{{ assessment.child.name }}</div>
+                      <div class="text-sm text-gray-500">{{ assessment.child.case_number }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div class="flex items-center space-x-2">
+                    <span>{{ getSectionDisplay(assessment.section) }}</span>
+                    <span class="text-xs text-gray-500">({{ getSectionProgress(assessment) }})</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="getStatusClass(assessment.status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                    {{ assessment.status.replace('_', ' ').toUpperCase() }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatDate(assessment.assessment_date) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button @click="continueAssessment(assessment)" class="text-blue-600 hover:text-blue-900">
+                    {{ assessment.status === 'completed' ? 'View' : 'Continue' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -173,7 +222,7 @@
 </template>
 
 <script>
-import { childrenAPI, householdAssessmentsAPI } from '../../services/api'
+import { childrenAPI, householdAssessmentsAPI, assessmentsAPI } from '../../services/api'
 
 export default {
   name: 'AssessmentsIndex',
@@ -185,6 +234,8 @@ export default {
       familyAssessmentType: 'new',
       existingFamilyAssessment: null,
       children: [],
+      assessments: [],
+      householdAssessments: [],
       loading: true,
       familyAssessments: [],
       existingHouseholds: []
@@ -192,15 +243,32 @@ export default {
   },
   async mounted() {
     await this.loadChildren()
+    await this.loadAssessments()
+    await this.loadHouseholdAssessments()
     await this.loadExistingHouseholds()
   },
   computed: {
-    selectedChild() {
-      return this.children.find(child => child.id == this.selectedChildId)
+    availableChildren() {
+      // Filter out children who already have assessments (since only one per child allowed)
+      const childrenWithAssessments = this.assessments.map(a => a.child_id)
+      return this.children.filter(child => !childrenWithAssessments.includes(child.id))
+    },
+    uniqueAssessments() {
+      // Remove duplicates by child_id, keeping the most recent
+      const seen = new Set()
+      return this.assessments.filter(assessment => {
+        if (seen.has(assessment.child_id)) {
+          return false
+        }
+        seen.add(assessment.child_id)
+        return true
+      })
+    },
+    availableFamilyChildren() {
+      // Filter out children who already have household assessments
+      const childrenWithHouseholdAssessments = this.householdAssessments.map(ha => ha.child_id)
+      return this.children.filter(child => !childrenWithHouseholdAssessments.includes(child.id))
     }
-  },
-  async mounted() {
-    await this.loadChildren()
   },
   methods: {
     async loadChildren() {
@@ -223,15 +291,22 @@ export default {
         this.loading = false
       }
     },
-    async loadChildren() {
-      console.log('Testing direct fetch...')
+    async loadAssessments() {
       try {
-        const response = await fetch('http://localhost:8000/api/health')
-        console.log('Fetch response:', response)
-        const data = await response.json()
-        console.log('Fetch data:', data)
+        const response = await assessmentsAPI.getAll()
+        this.assessments = response.data.data || []
       } catch (error) {
-        console.error('Fetch error:', error)
+        console.error('Error loading assessments:', error)
+        this.assessments = []
+      }
+    },
+    async loadHouseholdAssessments() {
+      try {
+        const response = await householdAssessmentsAPI.getAll()
+        this.householdAssessments = response.data.data || []
+      } catch (error) {
+        console.error('Error loading household assessments:', error)
+        this.householdAssessments = []
       }
     },
     async loadExistingHouseholds() {
@@ -341,6 +416,63 @@ export default {
           this.$router.push(`/assessments/family/${firstChild.id}`)
         }
       }
+    },
+    formatDate(date) {
+      return new Date(date).toLocaleDateString()
+    },
+    getStatusClass(status) {
+      const classes = {
+        'draft': 'bg-gray-100 text-gray-800',
+        'in_progress': 'bg-yellow-100 text-yellow-800',
+        'completed': 'bg-green-100 text-green-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
+    },
+    continueAssessment(assessment) {
+      if (assessment.status === 'completed') {
+        // View completed assessment
+        this.$router.push(`/assessments/child/${assessment.child_id}/view`)
+      } else {
+        // Continue in-progress assessment
+        const sectionRoutes = {
+          'education': '',
+          'care_protection': '/care-protection',
+          'health': '/health',
+          'emotional': '/emotional',
+          'economic': '/economic'
+        }
+        const route = sectionRoutes[assessment.section] || ''
+        this.$router.push(`/assessments/child/${assessment.child_id}${route}`)
+      }
+    },
+    formatDate(date) {
+      return new Date(date).toLocaleDateString()
+    },
+    getStatusClass(status) {
+      const classes = {
+        'draft': 'bg-gray-100 text-gray-800',
+        'in_progress': 'bg-yellow-100 text-yellow-800',
+        'completed': 'bg-green-100 text-green-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
+    },
+    getSectionDisplay(section) {
+      const sections = {
+        'education': 'Education',
+        'care_protection': 'Care & Protection',
+        'health': 'Health',
+        'emotional': 'Emotional',
+        'economic': 'Economic'
+      }
+      return sections[section] || 'Started'
+    },
+    getSectionProgress(assessment) {
+      const sections = ['education', 'care_protection', 'health', 'emotional', 'economic']
+      const currentIndex = sections.indexOf(assessment.section)
+      if (assessment.status === 'completed') {
+        return '5/5'
+      }
+      return `${currentIndex + 1}/5`
     }
   }
 }

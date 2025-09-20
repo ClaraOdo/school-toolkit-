@@ -165,6 +165,8 @@
 </template>
 
 <script>
+import api from '../../services/api'
+
 export default {
   name: 'ChildEmotional',
   data() {
@@ -181,25 +183,54 @@ export default {
     }
   },
   async mounted() {
+    this.$api = api
     await this.loadChildData()
   },
   methods: {
     async loadChildData() {
-      const childId = this.$route.params.childId
-      const mockChildren = {
-        1: { childName: 'John Doe' },
-        2: { childName: 'Jane Smith' },
-        3: { childName: 'Mary Johnson' }
+      try {
+        const childId = this.$route.params.childId
+        const response = await this.$api.get(`/children/${childId}`)
+        if (response.data?.data) {
+          this.childData = { childName: response.data.data.name }
+        } else {
+          this.childData = { childName: 'Unknown Child' }
+        }
+        
+        // Load existing assessment data
+        const assessmentResponse = await this.$api.get(`/children/${childId}/assessments`)
+        if (assessmentResponse.data?.data?.length > 0) {
+          const latest = assessmentResponse.data.data[0]
+          this.form = {
+            peerInteractionRating: latest.peer_interaction_rating || '',
+            adultInteractionRating: latest.adult_interaction_rating || '',
+            stressHandling: latest.stress_handling_methods || [],
+            stressHandlingOther: '',
+            bestFriends: latest.best_friends || ['', '', '']
+          }
+        }
+      } catch (error) {
+        console.error('Error loading child data:', error)
+        this.childData = { childName: 'Unknown Child' }
       }
-      this.childData = mockChildren[childId] || { childName: 'Unknown Child' }
     },
     async submitSection() {
       try {
         const childId = this.$route.params.childId
-        console.log('Saving emotional section:', this.form)
+        
+        const payload = {
+          section: 'emotional',
+          peer_interaction_rating: this.form.peerInteractionRating,
+          adult_interaction_rating: this.form.adultInteractionRating,
+          stress_handling_methods: this.form.stressHandling,
+          best_friends: this.form.bestFriends.filter(friend => friend.trim())
+        }
+        
+        await this.$api.post(`/children/${childId}/assessments`, payload)
         this.$router.push(`/assessments/child/${childId}/economic`)
       } catch (error) {
         console.error('Error saving section:', error)
+        alert('Error saving assessment. Please try again.')
       }
     }
   }

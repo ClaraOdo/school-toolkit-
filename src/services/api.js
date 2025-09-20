@@ -70,6 +70,7 @@ export const caregiversAPI = {
 
 // Assessments API
 export const assessmentsAPI = {
+  getAll: () => api.get('/assessments'),
   getByChild: (childId) => api.get(`/children/${childId}/assessments`),
   create: (childId, data) => api.post(`/children/${childId}/assessments`, data),
   getById: (id) => api.get(`/child-assessments/${id}`),
@@ -81,6 +82,7 @@ export const assessmentsAPI = {
 
 // Household Assessments API
 export const householdAssessmentsAPI = {
+  getAll: () => api.get('/household-assessments'),
   getByChild: (childId) => api.get(`/children/${childId}/household-assessments`),
   create: (childId, data) => api.post(`/children/${childId}/household-assessments`, data),
   getById: (id) => api.get(`/household-assessments/${id}`),

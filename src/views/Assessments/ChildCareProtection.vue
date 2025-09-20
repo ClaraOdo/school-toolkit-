@@ -135,6 +135,8 @@
 </template>
 
 <script>
+import api from '../../services/api'
+
 export default {
   name: 'ChildCareProtection',
   data() {
@@ -154,25 +156,79 @@ export default {
     }
   },
   async mounted() {
+    this.$api = api
     await this.loadChildData()
   },
   methods: {
     async loadChildData() {
-      const childId = this.$route.params.childId
-      const mockChildren = {
-        1: { childName: 'John Doe' },
-        2: { childName: 'Jane Smith' },
-        3: { childName: 'Mary Johnson' }
+      try {
+        const childId = this.$route.params.childId
+        const response = await this.$api.get(`/children/${childId}`)
+        if (response.data && response.data.data) {
+          this.childData = { childName: response.data.data.name }
+        } else {
+          this.childData = { childName: 'Unknown Child' }
+        }
+        
+        // Load existing assessment data
+        const assessmentResponse = await this.$api.get(`/children/${childId}/assessments`)
+        if (assessmentResponse.data?.data?.length > 0) {
+          const latest = assessmentResponse.data.data[0]
+          this.form = {
+            sameCaregiverPast12Months: latest.stable_caregiver_12_months === true ? 'yes' : latest.stable_caregiver_12_months === false ? 'no' : '',
+            feelingWithdrawn: latest.feeling_withdrawn_6_months === true ? 'yes' : latest.feeling_withdrawn_6_months === false ? 'no' : '',
+            reportingMechanism: this.mapReportingKnowledge(latest.abuse_reporting_knowledge),
+            experiences: {
+              physicalAbuse: (latest.physical_abuse || [])[0] === 'experienced' ? 'yes' : (latest.physical_abuse || [])[0] === 'not_experienced' ? 'no' : '',
+              sexualAbuse: (latest.sexual_abuse || [])[0] === 'experienced' ? 'yes' : (latest.sexual_abuse || [])[0] === 'not_experienced' ? 'no' : '',
+              mealWithheld: (latest.meal_withheld || [])[0] === 'experienced' ? 'yes' : (latest.meal_withheld || [])[0] === 'not_experienced' ? 'no' : '',
+              childLabour: (latest.child_labour || [])[0] === 'experienced' ? 'yes' : (latest.child_labour || [])[0] === 'not_experienced' ? 'no' : ''
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading child:', error)
+        this.childData = { childName: 'Unknown Child' }
       }
-      this.childData = mockChildren[childId] || { childName: 'Unknown Child' }
+    },
+    mapReportingKnowledge(knowledge) {
+      const map = {
+        'basic': 'primary-caregiver',
+        'good': 'teacher',
+        'excellent': 'police',
+        'none': 'nothing'
+      }
+      return map[knowledge] || ''
     },
     async submitSection() {
       try {
         const childId = this.$route.params.childId
-        console.log('Saving care protection section:', this.form)
+        
+        // Map frontend values to backend enum values
+        const reportingMap = {
+          'primary-caregiver': 'basic',
+          'family-member': 'basic', 
+          'teacher': 'good',
+          'police': 'excellent',
+          'nothing': 'none'
+        }
+        
+        const payload = {
+          section: 'care_protection',
+          stable_caregiver_12_months: this.form.sameCaregiverPast12Months === 'yes',
+          feeling_withdrawn_6_months: this.form.feelingWithdrawn === 'yes',
+          abuse_reporting_knowledge: reportingMap[this.form.reportingMechanism] || 'none',
+          physical_abuse: [this.form.experiences.physicalAbuse === 'yes' ? 'experienced' : 'not_experienced'],
+          sexual_abuse: [this.form.experiences.sexualAbuse === 'yes' ? 'experienced' : 'not_experienced'],
+          meal_withheld: [this.form.experiences.mealWithheld === 'yes' ? 'experienced' : 'not_experienced'],
+          child_labour: [this.form.experiences.childLabour === 'yes' ? 'experienced' : 'not_experienced']
+        }
+        
+        await this.$api.post(`/children/${childId}/assessments`, payload)
         this.$router.push(`/assessments/child/${childId}/health`)
       } catch (error) {
         console.error('Error saving section:', error)
+        alert('Error saving assessment. Please try again.')
       }
     }
   }

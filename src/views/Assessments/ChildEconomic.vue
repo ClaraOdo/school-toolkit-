@@ -80,19 +80,19 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">What is your rating of the primary caregivers' commitment to cover the child's school dues and personal requirements?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.caregiverCommitment" type="radio" value="very-committed" class="mr-2">
+                  <input v-model="form.caregiverCommitment" type="radio" value="very_committed" class="mr-2">
                   Very committed
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.caregiverCommitment" type="radio" value="somehow-committed" class="mr-2">
+                  <input v-model="form.caregiverCommitment" type="radio" value="somehow_committed" class="mr-2">
                   Somehow committed
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.caregiverCommitment" type="radio" value="not-committed" class="mr-2">
+                  <input v-model="form.caregiverCommitment" type="radio" value="not_committed" class="mr-2">
                   Not committed at all
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.caregiverCommitment" type="radio" value="dont-know" class="mr-2">
+                  <input v-model="form.caregiverCommitment" type="radio" value="dont_know" class="mr-2">
                   Don't know
                 </label>
               </div>
@@ -102,15 +102,15 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">How would you rate the economic situation of the child's household?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.economicSituation" type="radio" value="economically-stable" class="mr-2">
+                  <input v-model="form.economicSituation" type="radio" value="economically_stable" class="mr-2">
                   Economically stable
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.economicSituation" type="radio" value="somewhat-struggling" class="mr-2">
+                  <input v-model="form.economicSituation" type="radio" value="somewhat_struggling" class="mr-2">
                   Somewhat struggling
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.economicSituation" type="radio" value="critically-vulnerable" class="mr-2">
+                  <input v-model="form.economicSituation" type="radio" value="critically_vulnerable" class="mr-2">
                   Critically vulnerable
                 </label>
                 <label class="flex items-center">
@@ -154,6 +154,8 @@
 </template>
 
 <script>
+import api from '../../services/api'
+
 export default {
   name: 'ChildEconomic',
   data() {
@@ -173,30 +175,61 @@ export default {
     }
   },
   async mounted() {
+    this.$api = api
     await this.loadChildData()
   },
   methods: {
     async loadChildData() {
-      const childId = this.$route.params.childId
-      const mockChildren = {
-        1: { childName: 'John Doe' },
-        2: { childName: 'Jane Smith' },
-        3: { childName: 'Mary Johnson' }
+      try {
+        const childId = this.$route.params.childId
+        const response = await this.$api.get(`/children/${childId}`)
+        if (response.data?.data) {
+          this.childData = { childName: response.data.data.name }
+        } else {
+          this.childData = { childName: 'Unknown Child' }
+        }
+        
+        // Load existing assessment data
+        const assessmentResponse = await this.$api.get(`/children/${childId}/assessments`)
+        if (assessmentResponse.data?.data?.length > 0) {
+          const latest = assessmentResponse.data.data[0]
+          this.form = {
+            reliableLivelihood: latest.reliable_livelihood === true ? 'yes' : latest.reliable_livelihood === false ? 'no' : '',
+            livelihoodSource: latest.livelihood_source || '',
+            ableToPaySchoolFees: latest.able_to_pay_school_fees === true ? 'yes' : latest.able_to_pay_school_fees === false ? 'no' : '',
+            ableToMeetBasicNeeds: latest.able_to_meet_basic_needs === true ? 'yes' : latest.able_to_meet_basic_needs === false ? 'no' : '',
+            caregiverCommitment: latest.caregiver_commitment || '',
+            economicSituation: latest.economic_situation || '',
+            futurePlans: latest.future_plans || ''
+          }
+        }
+      } catch (error) {
+        console.error('Error loading child data:', error)
+        this.childData = { childName: 'Unknown Child' }
       }
-      this.childData = mockChildren[childId] || { childName: 'Unknown Child' }
     },
     async submitSection() {
       try {
         const childId = this.$route.params.childId
-        console.log('Completing assessment:', this.form)
         
-        // Final submission to API
-        // await completeAssessment(childId, this.form)
+        const payload = {
+          section: 'economic',
+          reliable_livelihood: this.form.reliableLivelihood === 'yes',
+          livelihood_source: this.form.livelihoodSource || null,
+          able_to_pay_school_fees: this.form.ableToPaySchoolFees === 'yes',
+          able_to_meet_basic_needs: this.form.ableToMeetBasicNeeds === 'yes',
+          caregiver_commitment: this.form.caregiverCommitment || null,
+          economic_situation: this.form.economicSituation || null,
+          future_plans: this.form.futurePlans || null
+        }
         
-        // Redirect to assessments with success message
+        console.log('Sending payload:', payload)
+        await this.$api.post(`/children/${childId}/assessments`, payload)
         this.$router.push('/assessments?success=child-assessment-completed')
       } catch (error) {
         console.error('Error completing assessment:', error)
+        console.error('Error response:', error.response?.data)
+        alert('Error saving assessment. Please try again.')
       }
     }
   }

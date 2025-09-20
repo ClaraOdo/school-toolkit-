@@ -226,6 +226,8 @@
 </template>
 
 <script>
+import api from '../../services/api'
+
 export default {
   name: 'ChildHealth',
   data() {
@@ -250,25 +252,69 @@ export default {
     }
   },
   async mounted() {
+    this.$api = api
     await this.loadChildData()
   },
   methods: {
     async loadChildData() {
-      const childId = this.$route.params.childId
-      const mockChildren = {
-        1: { childName: 'John Doe' },
-        2: { childName: 'Jane Smith' },
-        3: { childName: 'Mary Johnson' }
+      try {
+        const childId = this.$route.params.childId
+        const response = await this.$api.get(`/children/${childId}`)
+        if (response.data?.data) {
+          this.childData = { childName: response.data.data.name }
+        } else {
+          this.childData = { childName: 'Unknown Child' }
+        }
+        
+        // Load existing assessment data
+        const assessmentResponse = await this.$api.get(`/children/${childId}/assessments`)
+        if (assessmentResponse.data?.data?.length > 0) {
+          const latest = assessmentResponse.data.data[0]
+          this.form = {
+            adequateFoodSchool: latest.adequate_food_school === true ? 'yes' : latest.adequate_food_school === false ? 'no' : '',
+            adequateFoodHome: latest.adequate_food_home === true ? 'yes' : latest.adequate_food_home === false ? 'no' : '',
+            safeDrinkingWater: latest.safe_drinking_water === true ? 'yes' : latest.safe_drinking_water === false ? 'no' : '',
+            eatsWell: latest.eats_well === true ? 'yes' : latest.eats_well === false ? 'no' : '',
+            eatingDisorders: latest.eating_disorders === true ? 'yes' : latest.eating_disorders === false ? 'no' : '',
+            chronicDisease: latest.chronic_disease === true ? 'yes' : latest.chronic_disease === false ? 'no' : '',
+            chronicIllnessType: latest.chronic_illness_type || '',
+            illnessHandlingMethod: latest.illness_handling_method || '',
+            currentImmunizations: latest.current_immunizations === true ? 'yes' : latest.current_immunizations === false ? 'no' : '',
+            menstrualSanitationAccess: latest.menstrual_sanitation_access === true ? 'yes' : latest.menstrual_sanitation_access === false ? 'no' : '',
+            recentIllness: latest.recent_illness === true ? 'yes' : latest.recent_illness === false ? 'no' : '',
+            recentIllnessDetails: latest.recent_illness_details || ''
+          }
+        }
+      } catch (error) {
+        console.error('Error loading child data:', error)
+        this.childData = { childName: 'Unknown Child' }
       }
-      this.childData = mockChildren[childId] || { childName: 'Unknown Child' }
     },
     async submitSection() {
       try {
         const childId = this.$route.params.childId
-        console.log('Saving health section:', this.form)
+        
+        const payload = {
+          section: 'health',
+          adequate_food_school: this.form.adequateFoodSchool === 'yes',
+          adequate_food_home: this.form.adequateFoodHome === 'yes',
+          safe_drinking_water: this.form.safeDrinkingWater === 'yes',
+          eats_well: this.form.eatsWell === 'yes',
+          eating_disorders: this.form.eatingDisorders === 'yes',
+          chronic_disease: this.form.chronicDisease === 'yes',
+          chronic_illness_type: this.form.chronicIllnessType,
+          illness_handling_method: this.form.illnessHandlingMethod,
+          current_immunizations: this.form.currentImmunizations === 'yes',
+          menstrual_sanitation_access: this.form.menstrualSanitationAccess === 'yes',
+          recent_illness: this.form.recentIllness === 'yes',
+          recent_illness_details: this.form.recentIllnessDetails
+        }
+        
+        await this.$api.post(`/children/${childId}/assessments`, payload)
         this.$router.push(`/assessments/child/${childId}/emotional`)
       } catch (error) {
         console.error('Error saving section:', error)
+        alert('Error saving assessment. Please try again.')
       }
     }
   }
