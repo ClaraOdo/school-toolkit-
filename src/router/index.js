@@ -17,6 +17,9 @@ import ChildHealth from '../views/Assessments/ChildHealth.vue'
 import ChildEmotional from '../views/Assessments/ChildEmotional.vue'
 import ChildEconomic from '../views/Assessments/ChildEconomic.vue'
 import FamilyAssessment from '../views/Assessments/FamilyAssessment.vue'
+import FamilyEconomic from '../views/Assessments/FamilyEconomic.vue'
+import FamilyHealth from '../views/Assessments/FamilyHealth.vue'
+import FamilyCareProtection from '../views/Assessments/FamilyCareProtection.vue'
 import CasePlans from '../views/CasePlans/Index.vue'
 import Schools from '../views/Schools/Index.vue'
 import Users from '../views/Users/Index.vue'
@@ -99,9 +102,27 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/assessments/family',
+    path: '/assessments/family/:childId',
     name: 'FamilyAssessment',
     component: FamilyAssessment,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/assessments/family/:childId/economic',
+    name: 'FamilyEconomic',
+    component: FamilyEconomic,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/assessments/family/:childId/health',
+    name: 'FamilyHealth',
+    component: FamilyHealth,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/assessments/family/:childId/care-protection',
+    name: 'FamilyCareProtection',
+    component: FamilyCareProtection,
     meta: { requiresAuth: true }
   },
   {

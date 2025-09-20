@@ -72,12 +72,22 @@
             </p>
           </div>
           <div class="mt-6">
-            <router-link 
-              to="/assessments/family" 
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            >
-              Start Family Assessment
-            </router-link>
+            <div class="space-y-3">
+              <label class="block text-sm font-medium text-gray-700">Select Child for Family Assessment:</label>
+              <select v-model="selectedFamilyChildId" class="form-input">
+                <option value="">Choose a child...</option>
+                <option v-for="child in children" :key="child.id" :value="child.id">
+                  {{ child.name }} - {{ child.caseNumber }}
+                </option>
+              </select>
+              <button 
+                @click="startFamilyAssessment"
+                :disabled="!selectedFamilyChildId"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400"
+              >
+                Start Family Assessment
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -101,6 +111,7 @@ export default {
   data() {
     return {
       selectedChildId: '',
+      selectedFamilyChildId: '',
       children: [
         { id: 1, name: 'John Doe', caseNumber: 'CH001' },
         { id: 2, name: 'Jane Smith', caseNumber: 'CH002' },
@@ -130,6 +141,11 @@ export default {
     startChildAssessment() {
       if (this.selectedChildId) {
         this.$router.push(`/assessments/child/${this.selectedChildId}`)
+      }
+    },
+    startFamilyAssessment() {
+      if (this.selectedFamilyChildId) {
+        this.$router.push(`/assessments/family/${this.selectedFamilyChildId}`)
       }
     }
   }
