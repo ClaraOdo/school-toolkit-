@@ -72,21 +72,88 @@
             </p>
           </div>
           <div class="mt-6">
-            <div class="space-y-3">
-              <label class="block text-sm font-medium text-gray-700">Select Child for Family Assessment:</label>
-              <select v-model="selectedFamilyChildId" class="form-input">
-                <option value="">Choose a child...</option>
-                <option v-for="child in children" :key="child.id" :value="child.id">
-                  {{ child.name }} - {{ child.caseNumber }}
-                </option>
-              </select>
-              <button 
-                @click="startFamilyAssessment"
-                :disabled="!selectedFamilyChildId"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400"
-              >
-                Start Family Assessment
-              </button>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Family Assessment Options:</label>
+                <div class="space-y-2">
+                  <label class="flex items-center">
+                    <input v-model="familyAssessmentType" type="radio" value="new" class="mr-2">
+                    Start new family assessment for a child
+                  </label>
+                  <label class="flex items-center">
+                    <input v-model="familyAssessmentType" type="radio" value="existing" class="mr-2">
+                    Update existing household assessment
+                  </label>
+                </div>
+              </div>
+
+              <!-- New Family Assessment -->
+              <div v-if="familyAssessmentType === 'new'" class="space-y-3">
+                <label class="block text-sm font-medium text-gray-700">Select Child for New Family Assessment:</label>
+                <select v-model="selectedFamilyChildId" @change="checkExistingFamilyAssessment" class="form-input">
+                  <option value="">Choose a child...</option>
+                  <option v-for="child in children" :key="child.id" :value="child.id">
+                    {{ child.name }} - {{ child.caseNumber }}
+                  </option>
+                </select>
+                
+                <!-- Show existing family assessment warning if found -->
+                <div v-if="existingFamilyAssessment" class="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p class="text-sm text-yellow-800">
+                    <strong>⚠️ Family assessment already exists</strong> for this household (completed for {{ existingFamilyAssessment.childName }}).
+                  </p>
+                  <p class="text-xs text-yellow-700 mt-1">
+                    Consider updating the existing assessment instead of creating a new one.
+                  </p>
+                </div>
+                
+                <button 
+                  @click="startFamilyAssessment"
+                  :disabled="!selectedFamilyChildId"
+                  class="btn btn-primary bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+                >
+                  {{ existingFamilyAssessment ? 'Create New Assessment Anyway' : 'Start Family Assessment' }}
+                </button>
+              </div>
+
+              <!-- Existing Household Assessment -->
+              <div v-if="familyAssessmentType === 'existing'" class="space-y-3">
+                <label class="block text-sm font-medium text-gray-700">Select Existing Household:</label>
+                <select v-model="selectedExistingHousehold" class="form-input">
+                  <option value="">Choose a household...</option>
+                  <option v-for="household in existingHouseholds" :key="household.id" :value="household.id">
+                    {{ household.householdHead }} - {{ household.address }} ({{ household.childrenCount }} children)
+                  </option>
+                </select>
+                
+                <div v-if="selectedExistingHousehold" class="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p class="text-sm text-blue-800">
+                    <strong>Household Details:</strong>
+                  </p>
+                  <ul class="text-xs text-blue-700 mt-1 space-y-1">
+                    <li v-for="child in getHouseholdChildren(selectedExistingHousehold)" :key="child.id">
+                      • {{ child.name }} ({{ child.caseNumber }})
+                    </li>
+                  </ul>
+                </div>
+                
+                <div class="space-x-2">
+                  <button 
+                    @click="viewExistingAssessment"
+                    :disabled="!selectedExistingHousehold"
+                    class="btn btn-secondary"
+                  >
+                    View Assessment
+                  </button>
+                  <button 
+                    @click="updateExistingAssessment"
+                    :disabled="!selectedExistingHousehold"
+                    class="btn btn-primary bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+                  >
+                    Update Assessment
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -112,10 +179,57 @@ export default {
     return {
       selectedChildId: '',
       selectedFamilyChildId: '',
+      selectedExistingHousehold: '',
+      familyAssessmentType: 'new',
+      existingFamilyAssessment: null,
       children: [
-        { id: 1, name: 'John Doe', caseNumber: 'CH001' },
-        { id: 2, name: 'Jane Smith', caseNumber: 'CH002' },
-        { id: 3, name: 'Mary Johnson', caseNumber: 'CH003' }
+        { 
+          id: 1, 
+          name: 'John Doe', 
+          caseNumber: 'CH001', 
+          caregiverName: 'Mary Doe',
+          caregiverPhone: '0701234567',
+          address: 'Kololo, Nakasero Parish'
+        },
+        { 
+          id: 2, 
+          name: 'Jane Smith', 
+          caseNumber: 'CH002', 
+          caregiverName: 'Sarah Smith',
+          caregiverPhone: '0709876543',
+          address: 'Kamwokya, Central Parish'
+        },
+        { 
+          id: 3, 
+          name: 'Mary Johnson', 
+          caseNumber: 'CH003', 
+          caregiverName: 'Mary Doe',
+          caregiverPhone: '0701234567',
+          address: 'Kololo, Nakasero Parish'
+        }
+      ],
+      familyAssessments: [
+        { childId: 1, childName: 'John Doe', completed: true, id: 'FA001' }
+      ],
+      existingHouseholds: [
+        {
+          id: 'HH001',
+          householdHead: 'Mary Doe',
+          address: 'Kololo, Nakasero Parish',
+          phone: '0701234567',
+          childrenCount: 2,
+          assessmentId: 'FA001',
+          lastUpdated: '2024-01-15'
+        },
+        {
+          id: 'HH002', 
+          householdHead: 'Sarah Smith',
+          address: 'Kamwokya, Central Parish',
+          phone: '0709876543',
+          childrenCount: 1,
+          assessmentId: 'FA002',
+          lastUpdated: '2024-01-10'
+        }
       ]
     }
   },
@@ -146,6 +260,73 @@ export default {
     startFamilyAssessment() {
       if (this.selectedFamilyChildId) {
         this.$router.push(`/assessments/family/${this.selectedFamilyChildId}`)
+      }
+    },
+    checkExistingFamilyAssessment() {
+      if (!this.selectedFamilyChildId) {
+        this.existingFamilyAssessment = null
+        return
+      }
+      
+      const selectedChild = this.children.find(c => c.id == this.selectedFamilyChildId)
+      if (!selectedChild) return
+      
+      // Check if family assessment exists for same household using:
+      // 1. Same caregiver name AND phone, OR
+      // 2. Same address (indicating same household)
+      const existing = this.familyAssessments.find(fa => {
+        const assessedChild = this.children.find(c => c.id === fa.childId)
+        if (!assessedChild) return false
+        
+        // Same caregiver (name + phone match)
+        const sameCaregiverName = selectedChild.caregiverName === assessedChild.caregiverName
+        const sameCaregiverPhone = selectedChild.caregiverPhone === assessedChild.caregiverPhone
+        const sameCaregiver = sameCaregiverName && sameCaregiverPhone
+        
+        // Same address
+        const sameAddress = selectedChild.address === assessedChild.address
+        
+        return fa.completed && (sameCaregiver || sameAddress)
+      })
+      
+      this.existingFamilyAssessment = existing
+    },
+    viewFamilyAssessment() {
+      if (this.existingFamilyAssessment) {
+        // Navigate to view existing assessment
+        this.$router.push(`/assessments/family/${this.existingFamilyAssessment.childId}/view`)
+      }
+    },
+    updateFamilyAssessment() {
+      if (this.existingFamilyAssessment) {
+        // Navigate to update existing assessment
+        this.$router.push(`/assessments/family/${this.existingFamilyAssessment.childId}`)
+      }
+    },
+    getHouseholdChildren(householdId) {
+      const household = this.existingHouseholds.find(h => h.id === householdId)
+      if (!household) return []
+      
+      return this.children.filter(child => 
+        child.caregiverName === household.householdHead && 
+        child.address === household.address
+      )
+    },
+    viewExistingAssessment() {
+      if (this.selectedExistingHousehold) {
+        const household = this.existingHouseholds.find(h => h.id === this.selectedExistingHousehold)
+        const firstChild = this.getHouseholdChildren(this.selectedExistingHousehold)[0]
+        if (firstChild) {
+          this.$router.push(`/assessments/family/${firstChild.id}/view`)
+        }
+      }
+    },
+    updateExistingAssessment() {
+      if (this.selectedExistingHousehold) {
+        const firstChild = this.getHouseholdChildren(this.selectedExistingHousehold)[0]
+        if (firstChild) {
+          this.$router.push(`/assessments/family/${firstChild.id}`)
+        }
       }
     }
   }
