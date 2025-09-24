@@ -7,37 +7,19 @@
       </div>
 
       <form @submit.prevent="submitAssessment" class="p-6 space-y-8">
-        <!-- Background Information - Read Only Display -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">Background Information About the Child</h2>
-            <router-link to="/children/edit" class="text-blue-600 hover:text-blue-800 text-sm">Edit Basic Info</router-link>
+        <!-- Background Information - Compact Read-Only Display -->
+        <div class="bg-gray-50 p-3 rounded-lg">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-base font-semibold text-gray-900">Child Info</h2>
+            <router-link :to="`/children/${$route.params.childId}/edit`" class="text-blue-600 hover:text-blue-800 text-sm">Edit Basic Info</router-link>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Name of school</label>
-              <p class="mt-1 text-sm text-gray-900 bg-white p-2 border rounded">{{ childData.schoolName || 'Not specified' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Child's Name</label>
-              <p class="mt-1 text-sm text-gray-900 bg-white p-2 border rounded">{{ childData.childName || 'Not specified' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-              <p class="mt-1 text-sm text-gray-900 bg-white p-2 border rounded">{{ childData.dateOfBirth || 'Not specified' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Child case Number</label>
-              <p class="mt-1 text-sm text-gray-900 bg-white p-2 border rounded">{{ childData.caseNumber || 'Not specified' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Gender</label>
-              <p class="mt-1 text-sm text-gray-900 bg-white p-2 border rounded">{{ childData.gender || 'Not specified' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Religion</label>
-              <p class="mt-1 text-sm text-gray-900 bg-white p-2 border rounded">{{ childData.religion || 'Not specified' }}</p>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <div class="flex items-center"><span class="text-gray-500 w-36">School</span><span class="text-gray-900 truncate">: {{ childData.schoolName || 'Not specified' }}</span></div>
+            <div class="flex items-center"><span class="text-gray-500 w-36">Child</span><span class="text-gray-900 truncate">: {{ childData.childName || 'Not specified' }}</span></div>
+            <div class="flex items-center"><span class="text-gray-500 w-36">Date of Birth</span><span class="text-gray-900 truncate">: {{ childData.dateOfBirth ? `${formatDate(childData.dateOfBirth)} (${calculateAge(childData.dateOfBirth)} yrs)` : 'Not specified' }}</span></div>
+            <div class="flex items-center"><span class="text-gray-500 w-36">Case Number</span><span class="text-gray-900 truncate">: {{ childData.caseNumber || 'Not specified' }}</span></div>
+            <div class="flex items-center"><span class="text-gray-500 w-36">Gender</span><span class="text-gray-900 truncate">: {{ childData.gender || 'Not specified' }}</span></div>
+            <div class="flex items-center"><span class="text-gray-500 w-36">Religion</span><span class="text-gray-900 truncate">: {{ childData.religion || 'Not specified' }}</span></div>
           </div>
         </div>
 
@@ -273,6 +255,28 @@ export default {
         }
         
         alert(errorMessage)
+      }
+    },
+    formatDate(dateString) {
+      try {
+        const date = new Date(dateString)
+        return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' })
+      } catch (_) {
+        return dateString
+      }
+    },
+    calculateAge(dateString) {
+      try {
+        const dob = new Date(dateString)
+        const now = new Date()
+        let age = now.getFullYear() - dob.getFullYear()
+        const m = now.getMonth() - dob.getMonth()
+        if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) {
+          age--
+        }
+        return isNaN(age) ? '-' : age
+      } catch (_) {
+        return '-'
       }
     }
   }

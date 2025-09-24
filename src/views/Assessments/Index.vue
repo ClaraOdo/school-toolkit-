@@ -211,6 +211,10 @@
                   <button @click="continueAssessment(assessment)" class="text-blue-600 hover:text-blue-900">
                     {{ assessment.status === 'completed' ? 'View' : 'Continue' }}
                   </button>
+                  <span class="mx-2 text-gray-300">|</span>
+                  <button @click="editAssessment(assessment)" class="text-indigo-600 hover:text-indigo-900">
+                    Edit
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -445,16 +449,9 @@ export default {
         this.$router.push(`/assessments/child/${assessment.child_id}${route}`)
       }
     },
-    formatDate(date) {
-      return new Date(date).toLocaleDateString()
-    },
-    getStatusClass(status) {
-      const classes = {
-        'draft': 'bg-gray-100 text-gray-800',
-        'in_progress': 'bg-yellow-100 text-yellow-800',
-        'completed': 'bg-green-100 text-green-800'
-      }
-      return classes[status] || 'bg-gray-100 text-gray-800'
+    editAssessment(assessment) {
+      // Always navigate to the first step (education)
+      this.$router.push(`/assessments/child/${assessment.child_id}`)
     },
     getSectionDisplay(section) {
       const sections = {
