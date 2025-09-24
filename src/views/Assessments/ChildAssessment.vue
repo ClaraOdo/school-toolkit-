@@ -49,11 +49,11 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Is the child currently enrolled and attending school?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.currentlyEnrolled" type="radio" value="yes" class="mr-2">
+                  <input v-model="form.currently_enrolled" type="radio" value="yes" class="mr-2">
                   Yes
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.currentlyEnrolled" type="radio" value="no" class="mr-2">
+                  <input v-model="form.currently_enrolled" type="radio" value="no" class="mr-2">
                   No
                 </label>
               </div>
@@ -63,11 +63,11 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Is the child attending school regularly (At least 4 days a week on average) in the past 12 months?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.attendingRegularly" type="radio" value="yes" class="mr-2">
+                  <input v-model="form.attending_regularly" type="radio" value="yes" class="mr-2">
                   Yes
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.attendingRegularly" type="radio" value="no" class="mr-2">
+                  <input v-model="form.attending_regularly" type="radio" value="no" class="mr-2">
                   No
                 </label>
               </div>
@@ -77,11 +77,11 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Has the child successfully progressed from one level to another at school, during the last academic year?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.progressedLastYear" type="radio" value="yes" class="mr-2">
+                  <input v-model="form.progressed_last_year" type="radio" value="yes" class="mr-2">
                   Yes
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.progressedLastYear" type="radio" value="no" class="mr-2">
+                  <input v-model="form.progressed_last_year" type="radio" value="no" class="mr-2">
                   No
                 </label>
               </div>
@@ -91,23 +91,23 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Class teacher's opinion about the child's education progress</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.teacherOpinion" type="radio" value="excellent" class="mr-2">
+                  <input v-model="form.teacher_opinion" type="radio" value="excellent" class="mr-2">
                   Excellent
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.teacherOpinion" type="radio" value="good" class="mr-2">
+                  <input v-model="form.teacher_opinion" type="radio" value="good" class="mr-2">
                   Good
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.teacherOpinion" type="radio" value="fair" class="mr-2">
+                  <input v-model="form.teacher_opinion" type="radio" value="fair" class="mr-2">
                   Fair
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.teacherOpinion" type="radio" value="poor" class="mr-2">
+                  <input v-model="form.teacher_opinion" type="radio" value="poor" class="mr-2">
                   Poor
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.teacherOpinion" type="radio" value="very-poor" class="mr-2">
+                  <input v-model="form.teacher_opinion" type="radio" value="very_poor" class="mr-2">
                   Very poor
                 </label>
               </div>
@@ -117,15 +117,15 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Is the child's behaviour in classroom appropriate?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.classroomBehaviour" type="radio" value="very-appropriate" class="mr-2">
+                  <input v-model="form.classroom_behavior" type="radio" value="very_appropriate" class="mr-2">
                   Yes, very appropriate
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.classroomBehaviour" type="radio" value="somewhat-appropriate" class="mr-2">
+                  <input v-model="form.classroom_behavior" type="radio" value="somewhat_appropriate" class="mr-2">
                   Yes, somewhat appropriate
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.classroomBehaviour" type="radio" value="inappropriate" class="mr-2">
+                  <input v-model="form.classroom_behavior" type="radio" value="inappropriate" class="mr-2">
                   No, inappropriate
                 </label>
               </div>
@@ -162,11 +162,11 @@ export default {
         religion: 'Catholic'
       },
       form: {
-        currentlyEnrolled: '',
-        attendingRegularly: '',
-        progressedLastYear: '',
-        teacherOpinion: '',
-        classroomBehaviour: ''
+        currently_enrolled: '',
+        attending_regularly: '',
+        progressed_last_year: '',
+        teacher_opinion: '',
+        classroom_behavior: ''
       }
     }
   },
@@ -192,18 +192,39 @@ export default {
         
         // Load existing assessment data if available
         const currentAssessment = await assessmentsAPI.getByChild(childId)
-        if (currentAssessment.data && currentAssessment.data.length > 0) {
-          const latest = currentAssessment.data[0]
-          if (latest.status === 'in_progress') {
-            // Pre-fill form with existing data
-            this.form = {
-              currently_enrolled: latest.currently_enrolled || '',
-              attending_regularly: latest.attending_regularly || '',
-              progressed_last_year: latest.progressed_last_year || '',
-              teacher_opinion: latest.teacher_opinion || '',
-              classroom_behavior: latest.classroom_behavior || ''
-            }
+        console.log('Education API response:', currentAssessment)
+        console.log('Education API response data:', currentAssessment.data)
+        if (currentAssessment.data) {
+          // Handle both array and object responses
+          let latest
+          if (Array.isArray(currentAssessment.data)) {
+            latest = currentAssessment.data[0]
+          } else if (currentAssessment.data.data && Array.isArray(currentAssessment.data.data)) {
+            latest = currentAssessment.data.data[0]
+          } else {
+            latest = currentAssessment.data
           }
+          
+          console.log('Education latest assessment:', latest)
+          console.log('currently_enrolled raw:', latest.currently_enrolled, typeof latest.currently_enrolled)
+          console.log('attending_regularly raw:', latest.attending_regularly, typeof latest.attending_regularly)
+          console.log('progressed_last_year raw:', latest.progressed_last_year, typeof latest.progressed_last_year)
+          // Pre-fill form with existing data
+          this.form = {
+            currently_enrolled: latest.currently_enrolled === true || latest.currently_enrolled === 1 || latest.currently_enrolled === '1' || latest.currently_enrolled === 'yes' ? 'yes' : 
+                               latest.currently_enrolled === false || latest.currently_enrolled === 0 || latest.currently_enrolled === '0' || latest.currently_enrolled === 'no' ? 'no' : '',
+            attending_regularly: latest.attending_regularly === true || latest.attending_regularly === 1 || latest.attending_regularly === '1' || latest.attending_regularly === 'yes' ? 'yes' : 
+                                latest.attending_regularly === false || latest.attending_regularly === 0 || latest.attending_regularly === '0' || latest.attending_regularly === 'no' ? 'no' : '',
+            progressed_last_year: latest.progressed_last_year === true || latest.progressed_last_year === 1 || latest.progressed_last_year === '1' || latest.progressed_last_year === 'yes' ? 'yes' : 
+                                 latest.progressed_last_year === false || latest.progressed_last_year === 0 || latest.progressed_last_year === '0' || latest.progressed_last_year === 'no' ? 'no' : '',
+            teacher_opinion: latest.teacher_opinion || '',
+            classroom_behavior: latest.classroom_behavior || ''
+          }
+          console.log('Education form after loading:', this.form)
+          // Force Vue to update the radio buttons
+          this.$nextTick(() => {
+            this.$forceUpdate()
+          })
         }
       } catch (error) {
         console.error('Error loading child data:', error)
@@ -227,20 +248,31 @@ export default {
         const assessmentData = {
           section: 'education',
           assessment_type: 'initial',
-          currently_enrolled: this.form.currently_enrolled === 'yes',
-          attending_regularly: this.form.attending_regularly === 'yes',
-          progressed_last_year: this.form.progressed_last_year === 'yes',
+          currently_enrolled: this.form.currently_enrolled,
+          attending_regularly: this.form.attending_regularly,
+          progressed_last_year: this.form.progressed_last_year,
           teacher_opinion: this.form.teacher_opinion,
           classroom_behavior: this.form.classroom_behavior
         }
         
+        console.log('Sending assessment data:', assessmentData)
         await assessmentsAPI.create(childId, assessmentData)
         
         this.$router.push(`/assessments/child/${childId}/care-protection`)
       } catch (error) {
         console.error('Error saving assessment:', error)
-        // Show error message to user
-        alert('Error saving assessment. Please try again.')
+        console.error('Error response:', error.response?.data)
+        console.error('Error status:', error.response?.status)
+        
+        let errorMessage = 'Error saving assessment. Please try again.'
+        if (error.response?.status === 401) {
+          errorMessage = 'Please log in to continue.'
+          this.$router.push('/login')
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+        
+        alert(errorMessage)
       }
     }
   }

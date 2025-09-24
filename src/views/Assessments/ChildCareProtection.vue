@@ -12,54 +12,57 @@
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Care and Protection</h2>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">In the past 12 months, have you been under the care of and lived with the same adult primary Caregiver?</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">In the past 12 months, have you been under the
+                care of and lived with the same adult primary Caregiver?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.sameCaregiverPast12Months" type="radio" value="yes" class="mr-2">
+                  <input v-model="form.stable_caregiver_12_months" type="radio" value="yes" class="mr-2">
                   Yes
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.sameCaregiverPast12Months" type="radio" value="no" class="mr-2">
+                  <input v-model="form.stable_caregiver_12_months" type="radio" value="no" class="mr-2">
                   No
                 </label>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">In the past 6 months have you been feeling withdrawn or consistently sad, unhappy, or depressed?</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">In the past 6 months have you been feeling
+                withdrawn or consistently sad, unhappy, or depressed?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.feelingWithdrawn" type="radio" value="yes" class="mr-2">
+                  <input v-model="form.feeling_withdrawn_6_months" type="radio" value="yes" class="mr-2">
                   Yes
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.feelingWithdrawn" type="radio" value="no" class="mr-2">
+                  <input v-model="form.feeling_withdrawn_6_months" type="radio" value="no" class="mr-2">
                   No
                 </label>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">What would you do if you experienced or became a victim of abuse or violence?</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">What would you do if you experienced or became
+                a victim of abuse or violence?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.reportingMechanism" type="radio" value="primary-caregiver" class="mr-2">
+                  <input v-model="form.abuse_reporting_knowledge" type="radio" value="primary-caregiver" class="mr-2">
                   Report to the primary caregiver
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.reportingMechanism" type="radio" value="family-member" class="mr-2">
+                  <input v-model="form.abuse_reporting_knowledge" type="radio" value="family-member" class="mr-2">
                   Report to another family member
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.reportingMechanism" type="radio" value="teacher" class="mr-2">
+                  <input v-model="form.abuse_reporting_knowledge" type="radio" value="teacher" class="mr-2">
                   Report to a teacher
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.reportingMechanism" type="radio" value="police" class="mr-2">
+                  <input v-model="form.abuse_reporting_knowledge" type="radio" value="police" class="mr-2">
                   Report to police
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.reportingMechanism" type="radio" value="nothing" class="mr-2">
+                  <input v-model="form.abuse_reporting_knowledge" type="radio" value="nothing" class="mr-2">
                   Nothing
                 </label>
               </div>
@@ -67,7 +70,8 @@
 
             <!-- Experience Table -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">In the past 6 months, have any of the following happened to you?</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">In the past 6 months, have any of the
+                following happened to you?</label>
               <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-300">
                   <thead class="bg-gray-100">
@@ -81,37 +85,37 @@
                     <tr>
                       <td class="border border-gray-300 px-4 py-2">Physical abuse that caused body harm</td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.physicalAbuse" type="radio" value="yes">
+                        <input v-model="form.experiences.physical_abuse" type="radio" value="yes">
                       </td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.physicalAbuse" type="radio" value="no">
+                        <input v-model="form.experiences.physical_abuse" type="radio" value="no">
                       </td>
                     </tr>
                     <tr>
                       <td class="border border-gray-300 px-4 py-2">Sexual abuse or inappropriate touching</td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.sexualAbuse" type="radio" value="yes">
+                        <input v-model="form.experiences.sexual_abuse" type="radio" value="yes">
                       </td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.sexualAbuse" type="radio" value="no">
+                        <input v-model="form.experiences.sexual_abuse" type="radio" value="no">
                       </td>
                     </tr>
                     <tr>
                       <td class="border border-gray-300 px-4 py-2">Meal withheld as punishment</td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.mealWithheld" type="radio" value="yes">
+                        <input v-model="form.experiences.meal_withheld" type="radio" value="yes">
                       </td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.mealWithheld" type="radio" value="no">
+                        <input v-model="form.experiences.meal_withheld" type="radio" value="no">
                       </td>
                     </tr>
                     <tr>
                       <td class="border border-gray-300 px-4 py-2">Involved in child labour</td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.childLabour" type="radio" value="yes">
+                        <input v-model="form.experiences.child_labour" type="radio" value="yes">
                       </td>
                       <td class="border border-gray-300 px-4 py-2 text-center">
-                        <input v-model="form.experiences.childLabour" type="radio" value="no">
+                        <input v-model="form.experiences.child_labour" type="radio" value="no">
                       </td>
                     </tr>
                   </tbody>
@@ -122,7 +126,8 @@
         </div>
 
         <div class="flex justify-between">
-          <button type="button" @click="$router.push(`/assessments/child/${$route.params.childId}`)" class="btn btn-secondary">
+          <button type="button" @click="$router.push(`/assessments/child/${$route.params.childId}`)"
+            class="btn btn-secondary">
             Back to Education
           </button>
           <button type="submit" class="btn btn-primary">
@@ -143,14 +148,14 @@ export default {
     return {
       childData: { childName: 'Loading...' },
       form: {
-        sameCaregiverPast12Months: '',
-        feelingWithdrawn: '',
-        reportingMechanism: '',
+        stable_caregiver_12_months: '',
+        feeling_withdrawn_6_months: '',
+        abuse_reporting_knowledge: '',
         experiences: {
-          physicalAbuse: '',
-          sexualAbuse: '',
-          mealWithheld: '',
-          childLabour: ''
+          physical_abuse: '',
+          sexual_abuse: '',
+          meal_withheld: '',
+          child_labour: ''
         }
       }
     }
@@ -163,28 +168,42 @@ export default {
     async loadChildData() {
       try {
         const childId = this.$route.params.childId
+        console.log('Loading child ID:', childId)
         const response = await this.$api.get(`/children/${childId}`)
-        if (response.data && response.data.data) {
-          this.childData = { childName: response.data.data.name }
+        console.log('Child API response:', response.data)
+        if (response.data && response.data.name) {
+          this.childData = { childName: response.data.name }
+          console.log('Child data set to:', this.childData)
         } else {
           this.childData = { childName: 'Unknown Child' }
         }
         
         // Load existing assessment data
         const assessmentResponse = await this.$api.get(`/children/${childId}/assessments`)
+        console.log('Assessment response:', assessmentResponse.data)
         if (assessmentResponse.data?.data?.length > 0) {
           const latest = assessmentResponse.data.data[0]
+          console.log('Latest assessment data:', latest)
+          console.log('stable_caregiver_12_months raw:', latest.stable_caregiver_12_months)
+          console.log('feeling_withdrawn_6_months raw:', latest.feeling_withdrawn_6_months)
           this.form = {
-            sameCaregiverPast12Months: latest.stable_caregiver_12_months === true ? 'yes' : latest.stable_caregiver_12_months === false ? 'no' : '',
-            feelingWithdrawn: latest.feeling_withdrawn_6_months === true ? 'yes' : latest.feeling_withdrawn_6_months === false ? 'no' : '',
-            reportingMechanism: this.mapReportingKnowledge(latest.abuse_reporting_knowledge),
+            stable_caregiver_12_months: latest.stable_caregiver_12_months === true || latest.stable_caregiver_12_months === 1 || latest.stable_caregiver_12_months === '1' || latest.stable_caregiver_12_months === 'yes' ? 'yes' : 
+                                       latest.stable_caregiver_12_months === false || latest.stable_caregiver_12_months === 0 || latest.stable_caregiver_12_months === '0' || latest.stable_caregiver_12_months === 'no' ? 'no' : '',
+            feeling_withdrawn_6_months: latest.feeling_withdrawn_6_months === true || latest.feeling_withdrawn_6_months === 1 || latest.feeling_withdrawn_6_months === '1' || latest.feeling_withdrawn_6_months === 'yes' ? 'yes' : 
+                                       latest.feeling_withdrawn_6_months === false || latest.feeling_withdrawn_6_months === 0 || latest.feeling_withdrawn_6_months === '0' || latest.feeling_withdrawn_6_months === 'no' ? 'no' : '',
+            abuse_reporting_knowledge: latest.abuse_reporting_knowledge || '',
             experiences: {
-              physicalAbuse: (latest.physical_abuse || [])[0] === 'experienced' ? 'yes' : (latest.physical_abuse || [])[0] === 'not_experienced' ? 'no' : '',
-              sexualAbuse: (latest.sexual_abuse || [])[0] === 'experienced' ? 'yes' : (latest.sexual_abuse || [])[0] === 'not_experienced' ? 'no' : '',
-              mealWithheld: (latest.meal_withheld || [])[0] === 'experienced' ? 'yes' : (latest.meal_withheld || [])[0] === 'not_experienced' ? 'no' : '',
-              childLabour: (latest.child_labour || [])[0] === 'experienced' ? 'yes' : (latest.child_labour || [])[0] === 'not_experienced' ? 'no' : ''
+              physical_abuse: (latest.physical_abuse || [])[0] === 'experienced' ? 'yes' : (latest.physical_abuse || [])[0] === 'not_experienced' ? 'no' : '',
+              sexual_abuse: (latest.sexual_abuse || [])[0] === 'experienced' ? 'yes' : (latest.sexual_abuse || [])[0] === 'not_experienced' ? 'no' : '',
+              meal_withheld: (latest.meal_withheld || [])[0] === 'experienced' ? 'yes' : (latest.meal_withheld || [])[0] === 'not_experienced' ? 'no' : '',
+              child_labour: (latest.child_labour || [])[0] === 'experienced' ? 'yes' : (latest.child_labour || [])[0] === 'not_experienced' ? 'no' : ''
             }
           }
+          console.log('Form after loading:', this.form)
+          // Force Vue to re-render the form
+          this.$nextTick(() => {
+            this.$forceUpdate()
+          })
         }
       } catch (error) {
         console.error('Error loading child:', error)
@@ -215,19 +234,21 @@ export default {
         
         const payload = {
           section: 'care_protection',
-          stable_caregiver_12_months: this.form.sameCaregiverPast12Months === 'yes',
-          feeling_withdrawn_6_months: this.form.feelingWithdrawn === 'yes',
-          abuse_reporting_knowledge: reportingMap[this.form.reportingMechanism] || 'none',
-          physical_abuse: [this.form.experiences.physicalAbuse === 'yes' ? 'experienced' : 'not_experienced'],
-          sexual_abuse: [this.form.experiences.sexualAbuse === 'yes' ? 'experienced' : 'not_experienced'],
-          meal_withheld: [this.form.experiences.mealWithheld === 'yes' ? 'experienced' : 'not_experienced'],
-          child_labour: [this.form.experiences.childLabour === 'yes' ? 'experienced' : 'not_experienced']
+          stable_caregiver_12_months: this.form.stable_caregiver_12_months,
+          feeling_withdrawn_6_months: this.form.feeling_withdrawn_6_months,
+          abuse_reporting_knowledge: this.form.abuse_reporting_knowledge,
+          physical_abuse: [this.form.experiences.physical_abuse === 'yes' ? 'experienced' : 'not_experienced'],
+          sexual_abuse: [this.form.experiences.sexual_abuse === 'yes' ? 'experienced' : 'not_experienced'],
+          meal_withheld: [this.form.experiences.meal_withheld === 'yes' ? 'experienced' : 'not_experienced'],
+          child_labour: [this.form.experiences.child_labour === 'yes' ? 'experienced' : 'not_experienced']
         }
         
+        console.log('Submitting care protection payload:', payload)
         await this.$api.post(`/children/${childId}/assessments`, payload)
         this.$router.push(`/assessments/child/${childId}/health`)
       } catch (error) {
         console.error('Error saving section:', error)
+        console.error('Error response:', error.response?.data)
         alert('Error saving assessment. Please try again.')
       }
     }

@@ -15,19 +15,19 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">How does the child interact with fellow children?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithChildren" type="radio" value="perfectly-well" class="mr-2">
+                  <input v-model="form.peer_interaction_rating" type="radio" value="perfectly-well" class="mr-2">
                   Perfectly well
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithChildren" type="radio" value="somewhat-well" class="mr-2">
+                  <input v-model="form.peer_interaction_rating" type="radio" value="somewhat-well" class="mr-2">
                   Somewhat well
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithChildren" type="radio" value="with-reservations" class="mr-2">
+                  <input v-model="form.peer_interaction_rating" type="radio" value="with-reservations" class="mr-2">
                   With reservations
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithChildren" type="radio" value="poorly" class="mr-2">
+                  <input v-model="form.peer_interaction_rating" type="radio" value="poorly" class="mr-2">
                   Poorly
                 </label>
               </div>
@@ -37,19 +37,19 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">How does the child interact with adults?</label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithAdults" type="radio" value="perfectly-well" class="mr-2">
+                  <input v-model="form.adult_interaction_rating" type="radio" value="perfectly-well" class="mr-2">
                   Perfectly well
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithAdults" type="radio" value="somewhat-well" class="mr-2">
+                  <input v-model="form.adult_interaction_rating" type="radio" value="somewhat-well" class="mr-2">
                   Somewhat well
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithAdults" type="radio" value="with-reservations" class="mr-2">
+                  <input v-model="form.adult_interaction_rating" type="radio" value="with-reservations" class="mr-2">
                   With reservations
                 </label>
                 <label class="flex items-center">
-                  <input v-model="form.interactionWithAdults" type="radio" value="poorly" class="mr-2">
+                  <input v-model="form.adult_interaction_rating" type="radio" value="poorly" class="mr-2">
                   Poorly
                 </label>
               </div>
@@ -173,8 +173,8 @@ export default {
     return {
       childData: { childName: 'Loading...' },
       form: {
-        interactionWithChildren: '',
-        interactionWithAdults: '',
+        peer_interaction_rating: '',
+        adult_interaction_rating: '',
         stressHandling: [],
         stressHandlingOther: '',
         bestFriends: [],
@@ -199,15 +199,18 @@ export default {
         
         // Load existing assessment data
         const assessmentResponse = await this.$api.get(`/children/${childId}/assessments`)
+        console.log('Emotional assessment response:', assessmentResponse.data)
         if (assessmentResponse.data?.data?.length > 0) {
           const latest = assessmentResponse.data.data[0]
+          console.log('Latest emotional assessment:', latest)
           this.form = {
-            peerInteractionRating: latest.peer_interaction_rating || '',
-            adultInteractionRating: latest.adult_interaction_rating || '',
+            peer_interaction_rating: latest.peer_interaction_rating || '',
+            adult_interaction_rating: latest.adult_interaction_rating || '',
             stressHandling: latest.stress_handling_methods || [],
             stressHandlingOther: '',
             bestFriends: latest.best_friends || ['', '', '']
           }
+          console.log('Emotional form after loading:', this.form)
         }
       } catch (error) {
         console.error('Error loading child data:', error)
@@ -220,8 +223,8 @@ export default {
         
         const payload = {
           section: 'emotional',
-          peer_interaction_rating: this.form.peerInteractionRating,
-          adult_interaction_rating: this.form.adultInteractionRating,
+          peer_interaction_rating: this.form.peer_interaction_rating,
+          adult_interaction_rating: this.form.adult_interaction_rating,
           stress_handling_methods: this.form.stressHandling,
           best_friends: this.form.bestFriends.filter(friend => friend.trim())
         }
