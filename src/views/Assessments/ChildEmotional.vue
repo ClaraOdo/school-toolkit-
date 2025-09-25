@@ -94,7 +94,7 @@
                   <input v-model="form.stressHandling" type="checkbox" value="other" class="mr-2">
                   Other (specify)
                 </label>
-                <input v-if="form.stressHandling.includes('other')" v-model="form.stressHandlingOther" type="text" placeholder="Specify other" class="form-input ml-6">
+                <input v-if="form.stressHandling.includes('other')" v-model="form.stress_handling_other" type="text" placeholder="Specify other" class="form-input ml-6">
               </div>
             </div>
 
@@ -176,7 +176,7 @@ export default {
         peer_interaction_rating: '',
         adult_interaction_rating: '',
         stressHandling: [],
-        stressHandlingOther: '',
+        stress_handling_other: '',
         bestFriends: [],
         bestFriendsOther: ''
       }
@@ -207,7 +207,7 @@ export default {
             peer_interaction_rating: latest.peer_interaction_rating || '',
             adult_interaction_rating: latest.adult_interaction_rating || '',
             stressHandling: latest.stress_handling_methods || [],
-            stressHandlingOther: '',
+            stress_handling_other: latest.stress_handling_other || '',
             bestFriends: latest.best_friends || ['', '', '']
           }
           console.log('Emotional form after loading:', this.form)
@@ -226,6 +226,7 @@ export default {
           peer_interaction_rating: this.form.peer_interaction_rating,
           adult_interaction_rating: this.form.adult_interaction_rating,
           stress_handling_methods: this.form.stressHandling,
+          stress_handling_other: this.form.stress_handling_other || null,
           best_friends: this.form.bestFriends.filter(friend => friend.trim())
         }
         

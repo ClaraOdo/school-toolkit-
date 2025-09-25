@@ -23,6 +23,7 @@ import FamilyCareProtection from '../views/Assessments/FamilyCareProtection.vue'
 import CasePlans from '../views/CasePlans/Index.vue'
 import Schools from '../views/Schools/Index.vue'
 import Users from '../views/Users/Index.vue'
+import ChildAssessmentView from '../views/Assessments/ChildAssessmentView.vue'
 
 const routes = [
   {
@@ -75,6 +76,12 @@ const routes = [
     path: '/assessments/child/:childId',
     name: 'ChildAssessment',
     component: ChildAssessment,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/assessments/child/:childId/view',
+    name: 'ChildAssessmentView',
+    component: ChildAssessmentView,
     meta: { requiresAuth: true }
   },
   {
@@ -160,13 +167,13 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
-  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+  const requiresAdmin = user.value?.role !== 'admin' && to.matched.some(record => record.meta.requiresAdmin)
   
   if (requiresAuth && !isAuthenticated.value) {
     next('/login')
   } else if (requiresGuest && isAuthenticated.value) {
     next('/dashboard')
-  } else if (requiresAdmin && user.value?.role !== 'admin') {
+  } else if (requiresAdmin) {
     next('/dashboard') // Redirect non-admin users
   } else {
     next()
